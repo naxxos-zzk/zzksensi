@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaming Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2d1b3d, #4a2c5a, #6b3d75);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+            padding: 15px;
+        }
+
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2d1b3d, #4a2c5a, #6b3d75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-screen.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: rgba(255, 107, 157, 0.08);
+            border: 2px solid rgba(255, 107, 157, 0.3);
+            border-radius: 24px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(255, 107, 157, 0.2);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ff6b9d, #c44569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .login-box p {
+            color: #e8c5e5;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 107, 157, 0.1);
+            border: 2px solid rgba(255, 107, 157, 0.3);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1.1em;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #ff6b9d;
+            box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+        }
+
+        .login-input::placeholder {
+            color: rgba(232, 197, 229, 0.5);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #ff6b9d, #c44569);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .login-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .login-error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .main-content.show {
+            display: block;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            background: linear-gradient(45deg, #ff6b9d, #c44569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .status-bar {
+            background: rgba(255, 107, 157, 0.1);
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .panels {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: rgba(255, 107, 157, 0.08);
+            border: 1px solid rgba(255, 107, 157, 0.2);
+            border-radius: 18px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(255, 107, 157, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .panel:active {
+            transform: scale(0.98);
+            box-shadow: 0 0 30px rgba(255, 107, 157, 0.4);
+        }
+
+        .panel h3 {
+            color: #ff6b9d;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .setting {
+            margin-bottom: 20px;
+        }
+
+        .setting label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e8c5e5;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        .slider-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 6px;
+            background: rgba(255, 107, 157, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b9d, #c44569);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.6);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b9d, #c44569);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.6);
+            border: none;
+        }
+
+        .value-display {
+            text-align: center;
+            color: #ff6b9d;
+            font-weight: bold;
+            margin-top: 8px;
+            font-size: 1em;
+        }
+
+        .toggle-btn {
+            width: 60px;
+            height: 32px;
+            background: rgba(255, 107, 157, 0.2);
+            border-radius: 16px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(45deg, #ff6b9d, #c44569);
+        }
+
+        .toggle-btn::after {
+            content: '';
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-btn.active::after {
+            left: 29px;
+        }
+
+        .dropdown {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 107, 157, 0.1);
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .dropdown option {
+            background: #2d1b3d;
+            color: #fff;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #ff6b9d, #c44569);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+        }
+
+        .inject-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            font-size: 1.2em;
+            padding: 18px;
+        }
+
+        .inject-btn:active {
+            background: linear-gradient(45deg, #45a049, #3d8b40);
+        }
+
+        .inject-btn.injecting {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            cursor: not-allowed;
+        }
+
+        .inject-btn.success {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .fps-display {
+            font-size: 2.5em;
+            color: #ff6b9d;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 107, 157, 0.6);
+        }
+
+        .performance-bar {
+            height: 8px;
+            background: rgba(255, 107, 157, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .performance-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b9d, #c44569);
+            transition: width 0.5s;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: #4CAF50;
+            box-shadow: 0 0 8px #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .injection-status {
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .injection-status.ready {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+
+        .injection-status.injecting {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            color: #FF9800;
+        }
+
+        .injection-status.success {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+
+        .loading-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 107, 157, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .loading-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b9d, #c44569);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #ff6b9d, #c44569);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(255, 107, 157, 0.4);
+            z-index: 1000;
+            font-weight: bold;
+            font-size: 1em;
+            max-width: 280px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div class="login-screen" id="login-screen">
+        <div class="login-box">
+            <h2>🎮 PainelZZK</h2>
+            <p>Digite a senha para acessar o painel</p>
+            
+            <div class="login-error" id="login-error">
+                ❌ Senha incorreta! Tente novamente.
+            </div>
+            
+            <input 
+                type="password" 
+                class="login-input" 
+                id="password-input" 
+                placeholder="Digite a senha"
+                autocomplete="off"
+            >
+            
+            <button class="login-btn" onclick="checkPassword()">
+                🔓 Entrar
+            </button>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="main-content" id="main-content">
+    <div class="container">
+        <div class="header">
+            <h1>🎮 PainelZZK</h1>
+            <div class="status-bar">
+                <span class="status-indicator status-online"></span>
+                <span>Sistema Ativo • Performance Otimizada • </span>
+                <span id="current-time"></span>
+            </div>
+        </div>
+
+        <div class="panels">
+            <!-- Painel de Vídeo -->
+            <div class="panel">
+                <h3>⚙️ Configurações de Vídeo</h3>
+                
+                <div class="setting">
+                    <label>Limite de FPS</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="fps-slider" min="30" max="240" value="120">
+                        <div class="value-display" id="fps-value">120 FPS</div>
+                    </div>
+                </div>
+
+                <div class="setting">
+                    <label>Qualidade Gráfica</label>
+                    <select class="dropdown" id="quality-select">
+                        <option value="baixa">Baixa</option>
+                        <option value="media">Média</option>
+                        <option value="alta" selected>Alta</option>
+                        <option value="ultra">Ultra</option>
+                    </select>
+                </div>
+
+                <div class="setting">
+                    <label>V-Sync</label>
+                    <div class="toggle-btn" id="vsync-toggle"></div>
+                </div>
+
+                <button class="btn" onclick="applyVideoSettings()">Aplicar Configurações</button>
+            </div>
+
+            <!-- Painel de Performance -->
+            <div class="panel">
+                <h3>📊 Monitoramento</h3>
+                
+                <div class="fps-display" id="fps-counter">120</div>
+                <div style="text-align: center; color: #e8c5e5; margin-bottom: 20px; font-size: 0.9em;">FPS Atual</div>
+
+                <div class="setting">
+                    <label>CPU Usage</label>
+                    <div class="performance-bar">
+                        <div class="performance-fill" id="cpu-bar" style="width: 45%"></div>
+                    </div>
+                    <div style="text-align: center; color: #ff6b9d; font-size: 0.9em;" id="cpu-percent">45%</div>
+                </div>
+
+                <div class="setting">
+                    <label>GPU Usage</label>
+                    <div class="performance-bar">
+                        <div class="performance-fill" id="gpu-bar" style="width: 78%"></div>
+                    </div>
+                    <div style="text-align: center; color: #ff6b9d; font-size: 0.9em;" id="gpu-percent">78%</div>
+                </div>
+
+                <div class="setting">
+                    <label>Temperatura GPU</label>
+                    <div style="text-align: center; font-size: 1.3em; color: #ff6b9d; font-weight: bold;">67°C</div>
+                </div>
+            </div>
+
+            <!-- Painel de Calibração -->
+            <div class="panel">
+                <h3>🎯 Calibração de Mira</h3>
+                
+                <div class="setting">
+                    <label>Sensibilidade do Mouse</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="sens-slider" min="0.1" max="5.0" step="0.1" value="2.5">
+                        <div class="value-display" id="sens-value">2.5</div>
+                    </div>
+                </div>
+
+                <div class="setting">
+                    <label>DPI</label>
+                    <select class="dropdown" id="dpi-select">
+                        <option value="400">400 DPI</option>
+                        <option value="800" selected>800 DPI</option>
+                        <option value="1200">1200 DPI</option>
+                        <option value="1600">1600 DPI</option>
+                    </select>
+                </div>
+
+                <div class="setting">
+                    <label>Crosshair Size</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="crosshair-slider" min="1" max="10" value="4">
+                        <div class="value-display" id="crosshair-value">4</div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="calibrateCrosshair()">Calibrar Mira</button>
+            </div>
+
+            <!-- Painel de Injeção -->
+            <div class="panel">
+                <h3>⚡ Sistema de Injeção</h3>
+                
+                <div class="injection-status ready" id="injection-status">
+                    <span class="status-indicator status-online"></span>
+                    Pronto para injeção
+                </div>
+
+                <div class="setting">
+                    <label>Processo de Destino</label>
+                    <select class="dropdown" id="process-select">
+                        <option value="ff-normal">FF Normal</option>
+                        <option value="ff-max" selected>FF Max</option>
+                    </select>
+                </div>
+
+                <div class="setting">
+                    <label>Auxílio de Mira</label>
+                    <select class="dropdown" id="aim-assist">
+                        <option value="off">Desativado</option>
+                        <option value="50">Auxílio 50%</option>
+                        <option value="100">Auxílio 100%</option>
+                    </select>
+                </div>
+
+                <div class="setting">
+                    <label>Aimbot</label>
+                    <div class="toggle-btn" id="aimbot-toggle"></div>
+                </div>
+
+                <div class="setting">
+                    <label>No Recoil</label>
+                    <div class="toggle-btn" id="norecoil-toggle"></div>
+                </div>
+
+                <div class="setting">
+                    <label>Aim FOV</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="aimfov-slider" min="10" max="180" value="90">
+                        <div class="value-display" id="aimfov-value">90°</div>
+                    </div>
+                </div>
+
+                <div class="loading-bar" style="display: none;" id="loading-bar">
+                    <div class="loading-fill" id="loading-fill"></div>
+                </div>
+
+                <button class="btn inject-btn" id="inject-btn" onclick="startInjection()">
+                    💉 Injetar no Processo
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // Sistema de Login
+        const correctPassword = 'ZZK2025';
+        
+        function checkPassword() {
+            const input = document.getElementById('password-input');
+            const password = input.value;
+            const errorDiv = document.getElementById('login-error');
+            const loginScreen = document.getElementById('login-screen');
+            const mainContent = document.getElementById('main-content');
+            
+            if (password === correctPassword) {
+                // Senha correta - mostrar conteúdo
+                loginScreen.classList.add('hidden');
+                mainContent.classList.add('show');
+                
+                // Iniciar sistemas do painel
+                startPanelSystems();
+            } else {
+                // Senha incorreta
+                errorDiv.classList.add('show');
+                input.value = '';
+                input.focus();
+                
+                // Remover erro após 3 segundos
+                setTimeout(() => {
+                    errorDiv.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // Permitir login com Enter
+        document.getElementById('password-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+        
+        // Função para iniciar sistemas após login
+        function startPanelSystems() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            setInterval(updateFPS, 1000);
+            setInterval(updatePerformanceBars, 2000);
+        }
+
+        let isInjecting = false;
+
+        // Atualizar tempo atual
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR');
+            const timeEl = document.getElementById('current-time');
+            if (timeEl) timeEl.textContent = timeString;
+        }
+        
+        // Simulação de FPS counter
+        function updateFPS() {
+            const fpsSlider = document.getElementById('fps-slider');
+            const fpsCounter = document.getElementById('fps-counter');
+            if (fpsSlider && fpsCounter) {
+                const targetFPS = parseInt(fpsSlider.value);
+                const currentFPS = targetFPS - Math.floor(Math.random() * 10);
+                fpsCounter.textContent = Math.max(currentFPS, 30);
+            }
+        }
+
+        // Event listeners para sliders
+        document.getElementById('fps-slider').addEventListener('input', function(e) {
+            document.getElementById('fps-value').textContent = e.target.value + ' FPS';
+        });
+
+        document.getElementById('sens-slider').addEventListener('input', function(e) {
+            document.getElementById('sens-value').textContent = e.target.value;
+        });
+
+        document.getElementById('crosshair-slider').addEventListener('input', function(e) {
+            document.getElementById('crosshair-value').textContent = e.target.value;
+        });
+
+        document.getElementById('aimfov-slider').addEventListener('input', function(e) {
+            document.getElementById('aimfov-value').textContent = e.target.value + '°';
+        });
+
+        // Toggle buttons
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
+
+        // Função de injeção
+        function startInjection() {
+            if (isInjecting) return;
+            
+            isInjecting = true;
+            const injectBtn = document.getElementById('inject-btn');
+            const statusDiv = document.getElementById('injection-status');
+            const loadingBar = document.getElementById('loading-bar');
+            const loadingFill = document.getElementById('loading-fill');
+            
+            // Atualizar UI para estado de injeção
+            injectBtn.textContent = '⏳ Injetando...';
+            injectBtn.classList.add('injecting');
+            statusDiv.className = 'injection-status injecting';
+            statusDiv.innerHTML = '<span class="status-indicator" style="background: #FF9800; box-shadow: 0 0 8px #FF9800;"></span>Injetando no processo...';
+            
+            // Mostrar barra de loading
+            loadingBar.style.display = 'block';
+            
+            // Simular progresso
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 100) progress = 100;
+                loadingFill.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    
+                    // Simular sucesso após 1 segundo
+                    setTimeout(() => {
+                        injectBtn.textContent = '✅ Injetado com Sucesso';
+                        injectBtn.classList.remove('injecting');
+                        injectBtn.classList.add('success');
+                        statusDiv.className = 'injection-status success';
+                        statusDiv.innerHTML = '<span class="status-indicator status-online"></span>Injeção realizada com sucesso!';
+                        
+                        loadingBar.style.display = 'none';
+                        loadingFill.style.width = '0%';
+                        
+                        showNotification('Função injetada no processo com sucesso!');
+                        
+                        // Resetar após 3 segundos
+                        setTimeout(() => {
+                            injectBtn.textContent = '💉 Injetar no Processo';
+                            injectBtn.classList.remove('success');
+                            statusDiv.className = 'injection-status ready';
+                            statusDiv.innerHTML = '<span class="status-indicator status-online"></span>Pronto para injeção';
+                            isInjecting = false;
+                        }, 3000);
+                        
+                    }, 1000);
+                }
+            }, 200);
+        }
+
+        // Funções dos botões
+        function applyVideoSettings() {
+            showNotification('Configurações de vídeo aplicadas!');
+        }
+
+        function calibrateCrosshair() {
+            showNotification('Mira calibrada com sucesso!');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Simulação de barras de performance
+        function updatePerformanceBars() {
+            const cpuBar = document.getElementById('cpu-bar');
+            const gpuBar = document.getElementById('gpu-bar');
+            const cpuPercent = document.getElementById('cpu-percent');
+            const gpuPercent = document.getElementById('gpu-percent');
+            
+            const cpuUsage = 30 + Math.random() * 40;
+            const gpuUsage = 60 + Math.random() * 30;
+            
+            cpuBar.style.width = cpuUsage + '%';
+            gpuBar.style.width = gpuUsage + '%';
+            
+            cpuPercent.textContent = Math.round(cpuUsage) + '%';
+            gpuPercent.textContent = Math.round(gpuUsage) + '%';
+        }
+        
+        setInterval(updatePerformanceBars, 2000);
+    </script>
+</body>
+</html>
